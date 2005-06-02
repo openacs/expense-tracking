@@ -53,7 +53,12 @@ category::ad_form::add_widgets \
     -categorized_object_id [value_if_exists exp_id] \
     -form_name new_expense
 
-ad_form -extend -name new_expense -new_request {
+ad_form -extend -name new_expense -form {
+	{ new_expense_code:text(text),optional
+		{label "New Expense Code"}
+		{value ""}
+		{help_text "Enter a new expense code if the expense code you want is not listed above.<br />This new expense code will be available next time when you add an expense." } }
+} -new_request {
 	set exp_amount [template::util::currency::create "$" "0" "." "00" ]
 } -edit_request {
 	array set exp_item [exptrack::get_expense -id $exp_id]
@@ -74,10 +79,22 @@ ad_form -extend -name new_expense -new_request {
         set category_ids [category::ad_form::get_categories -container_object_id $expenses_package_id]
 } -new_data {
 	exptrack::add_expense -id $exp_id -date $exp_date -expense $expense -amount $exp_amount -class_key $class_key -user_id $user_id -community_id $community_id
-	category::map_object -remove_old -object_id $exp_id $category_ids
+	if { $new_expense_code != "" } {
+		set tree_id [db_string "get_tree_id" "select tree_id from category_tree_map where object_id =:expenses_package_id"]
+		set new_category_id [category::add -tree_id $tree_id -parent_id "" -name $new_expense_code ]
+		category::map_object -remove_old -object_id $exp_id $new_category_id
+	} else {
+		category::map_object -remove_old -object_id $exp_id $category_ids
+	}
 } -edit_data {
 	exptrack::update_expense -id $exp_id -date $exp_date -expense $expense -amount $exp_amount -class_key $class_key -user_id $user_id -community_id $community_id
-	category::map_object -remove_old -object_id $exp_id $category_ids
+	if { $new_expense_code != "" } {
+		set tree_id [db_string "get_tree_id" "select tree_id from category_tree_map where object_id =:expenses_package_id"]
+		set new_category_id [category::add -tree_id $tree_id -parent_id "" -name $new_expense_code ]
+		category::map_object -remove_old -object_id $exp_id $new_category_id
+	} else {
+		category::map_object -remove_old -object_id $exp_id $category_ids
+	}
 } -after_submit {
 	ad_returnredirect "$package_url/admin"
 	ad_script_abort
