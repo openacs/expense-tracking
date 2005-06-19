@@ -7,13 +7,13 @@ ad_page_contract {
 
 }  {
 	{ exp_id:integer,optional }
+	{ return_url ""}
 }
 
 # initial vars
 set package_id [ad_conn package_id]
 set package_url [apm_package_url_from_id $package_id]
 set user_id [auth::get_user_id]
-set return_url "$package_url/admin"
 set title "Add Expense"
 set expenses_package_id [expenses::get_package_id]
 
@@ -39,10 +39,12 @@ ad_form -name new_expense  \
 	exp_id:key(acs_object_id_seq)
 	{ expense:text
 		{ label "Expense" } }
-    	{ exp_date:text(text)
+    	{ exp_date:date
         	{label "Date"}
-        	{html {id sel1}}
-        	{after_html {<input type='reset' value=' ... ' onclick=\"return showCalendar('sel1', 'y-m-d');\"> \[<b>y-m-d </b>\]} } }
+		{format "Month DD YYYY"}
+		{year_interval {2000 2030 1}}
+        	{html {id exp_date} } 
+	    {after_html {<input type="button" style="width:23px; height:23px; background:  url('/resources/acs-templating/calendar.gif');" onclick ="return showCalendarWithDateWidget('exp_date', 'y-m-d');" />} } }
 	{ exp_amount:currency,to_sql(sql_number)
 		{ label "Amount" } }
 } 
@@ -63,7 +65,7 @@ ad_form -extend -name new_expense -form {
 } -edit_request {
 	array set exp_item [exptrack::get_expense -id $exp_id]
 	set expense $exp_item(exp_expense)
-	set exp_date $exp_item(exp_date)
+	set exp_date [calendar::from_sql_datetime -sql_date $exp_item(exp_date) -format "YYY-MM-DD"]
 	set amount_split [split $exp_item(exp_amount) .]
 	set exp_amount [template::util::currency::create "$" [lindex $amount_split 0] "." [lindex $amount_split 1] ]
 } -validate {
@@ -78,6 +80,7 @@ ad_form -extend -name new_expense -form {
 } -on_submit {
         set category_ids [category::ad_form::get_categories -container_object_id $expenses_package_id]
 } -new_data {
+	set exp_date [calendar::to_sql_datetime -date $exp_date -time ""]
 	exptrack::add_expense -id $exp_id -date $exp_date -expense $expense -amount $exp_amount -class_key $class_key -user_id $user_id -community_id $community_id
 	if { $new_expense_code != "" } {
 		set tree_id [db_string "get_tree_id" "select tree_id from category_tree_map where object_id =:expenses_package_id"]
@@ -87,6 +90,7 @@ ad_form -extend -name new_expense -form {
 		category::map_object -remove_old -object_id $exp_id $category_ids
 	}
 } -edit_data {
+	set exp_date [calendar::to_sql_datetime -date $exp_date -time ""]
 	exptrack::update_expense -id $exp_id -date $exp_date -expense $expense -amount $exp_amount -class_key $class_key -user_id $user_id -community_id $community_id
 	if { $new_expense_code != "" } {
 		set tree_id [db_string "get_tree_id" "select tree_id from category_tree_map where object_id =:expenses_package_id"]
@@ -96,7 +100,11 @@ ad_form -extend -name new_expense -form {
 		category::map_object -remove_old -object_id $exp_id $category_ids
 	}
 } -after_submit {
-	ad_returnredirect "$package_url/admin"
+	if { ![empty_string_p $return_url] } {
+		ad_returnredirect "$return_url"
+	} else {
+		ad_returnredirect "$package_url/admin"		
+	}
 	ad_script_abort
 }
 

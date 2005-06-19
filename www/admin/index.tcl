@@ -55,7 +55,7 @@ template::list::create \
     } -orderby {
 	exp_date { orderby exp_date }
 	exp_amount { orderby exp_amount }
-    } 
+    } -no_data { No expenses for this class. }
 
 # build the multirow
 

@@ -6,6 +6,7 @@ ad_page_contract {
 	@cvs-id $Id$
 } {
 	exp_id:multiple,notnull
+	{return_url ""}
 } -errors {
 	exp_id:notnull "You must provide the expenses to be deleted."
 }
@@ -35,4 +36,4 @@ template::list::create \
 set items_for_delete [join $bind_id_list ","]
 db_multirow expense_items item_del_query "select exp_expense, exp_date, exp_amount from expenses where exp_id in ($items_for_delete)"
 
-set hidden_vars [export_form_vars exp_id]
+set hidden_vars [export_form_vars exp_id return_url]

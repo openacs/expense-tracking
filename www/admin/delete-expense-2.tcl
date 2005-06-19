@@ -6,6 +6,7 @@ ad_page_contract {
 	@cvs-id $Id$
 } {
 	exp_id:notnull
+	{return_url ""}
 } -errors {
 	exp_id:notnull "At least one expense id is required"
 }
@@ -14,4 +15,8 @@ foreach id $exp_id {
 	exptrack::delete_expense -exp_id $id
 }
 
-ad_returnredirect "index"
+if { [empty_string_p $return_url] } {
+	ad_returnredirect "index"
+} else {
+	ad_returnredirect $return_url
+}

@@ -6,6 +6,6 @@
 
   <form method=post action="delete-expense-2">
     @hidden_vars;noquote@
-    <blockquote><input type=submit value="Yes"></blockquote>
+    <blockquote><input type=submit value="Yes">&nbsp;<input type=button onclick="history.back()" value="No"></blockquote>
   </form>
 
