@@ -13,7 +13,7 @@
         <vendor url="http://www.solutiongrove.com">Solutiong Grove</vendor>
 
         <!-- No dependency information -->
-	<requires url="expenses" version="0.1d"/>
+<!-- 	<requires url="expenses" version="0.1d"/> -->
         <callbacks>
         </callbacks>
         <parameters>
