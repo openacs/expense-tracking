@@ -56,7 +56,7 @@ category::ad_form::add_widgets \
     -form_name new_expense
 
 ad_form -extend -name new_expense -form {
-	{ new_expense_code:text(text),optional
+	{ new_expense_code:text(hidden),optional
 		{label "New Expense Code"}
 		{value ""}
 		{help_text "Enter a new expense code if the expense code you want is not listed above.<br />This new expense code will be available next time when you add an expense." } }
