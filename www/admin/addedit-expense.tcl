@@ -31,6 +31,9 @@ if {[ad_form_new_p -key exp_id]} {
 	set cancel_url $return_url
 }
 
+::template::head::add_javascript \
+    -src /resources/acs-templating/calendar.js
+
 # generate the form
 
 ad_form -name new_expense  \
